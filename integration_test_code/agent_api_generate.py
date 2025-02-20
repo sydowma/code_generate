@@ -18,9 +18,12 @@ from ollama import chat
 from pydantic import BaseModel
 
 
+example_code_path = ['spring-request/src/test/java/pro/demo/springrequest/UserControllerIntegrationTest.java']
+
 class RequestParameter(BaseModel):
     class_name: str
     full_file_path: str
+    package_name: str
     name: str
 
 
@@ -54,17 +57,25 @@ class APIGenerator:
         request_body_file_content = ''
         if api_information.request_body:
             for parameter in api_information.request_body:
-                request_body_file_content += open(parameter.full_file_path, 'r', encoding='utf-8').read()
+                path = parameter.full_file_path
+                request_body_file_content += open(path, 'r', encoding='utf-8').read()
         request_parameter_file_content = ''
         if api_information.request_parameter_for_url:
             for parameter in api_information.request_parameter_for_url:
-                request_parameter_file_content += open(parameter.full_file_path, 'r', encoding='utf-8').read()
+                path = parameter.full_file_path
+                request_parameter_file_content += open(path, 'r', encoding='utf-8').read()
 
+
+        example_code = ''
+        for file in example_code_path:
+            example_code = open(file, 'r', encoding='utf-8').read()
 
         # generate integration test code
-        message = f"here's Java code with SpringBoot framework, I ask you generate integration test code, full_file_path = {file_path}, content = {code_content}, api_information = {api_information}, request_body_file_content = {request_body_file_content}, request_parameter_file_content = {request_parameter_file_content} I want to generate test case which include assertion for different assert annotation, for example @NotBlank @Size @NotNull, you have to use Spring Boot mvc test framework, and you have to mock some bean and mock data"
+        message = f"here's Java code with SpringBoot framework, I ask you generate integration test code, full_file_path = {file_path}, content = {code_content}, api_information = {api_information}, request_body_file_content = {request_body_file_content}, request_parameter_file_content = {request_parameter_file_content} I want to generate test case which include assertion for different assert annotation, for example @NotBlank @Size @NotNull, you have to use Spring Boot mvc test framework, and you have to mock some bean and mock data, this is a example code {example_code}"
+
         response = self.generate_integration_test_code(message)
         print(response)
+        open('result.txt', 'w', encoding='utf-8').write(response)
 
 
 
