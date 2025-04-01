@@ -14,11 +14,12 @@ documents = SimpleDirectoryReader("data").load_data()
 index = VectorStoreIndex.from_documents(
     documents,
     # we can optionally override the embed_model here
-    # embed_model=Settings.embed_model,
+    embed_model=Settings.embed_model,
 )
+index.storage_context.persist("storage")
 query_engine = index.as_query_engine(
     # we can optionally override the llm here
-    # llm=Settings.llm,
+    llm=Settings.llm,
 )
 
 
