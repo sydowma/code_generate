@@ -163,3 +163,7 @@ cython_debug/
 .idea/
 
 storage/
+
+basic_workflow.html
+
+py-tree-sitter-languages-1.10.2/
