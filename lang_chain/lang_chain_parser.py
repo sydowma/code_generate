@@ -1,6 +1,7 @@
 import json
 import os
 
+from langchain_community.adapters import openai
 from langchain_community.document_loaders.generic import GenericLoader
 from langchain_community.document_loaders.parsers import LanguageParser
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -8,7 +9,7 @@ from langchain_community.vectorstores import FAISS
 
 def load_and_embed_documents():
     loader = GenericLoader.from_filesystem(
-        "spring-request",
+        "",
         glob="**/*",
         suffixes=[".java"],
         parser=LanguageParser("java")
@@ -18,6 +19,11 @@ def load_and_embed_documents():
     embeddings = HuggingFaceEmbeddings(
         model_name="Kwaipilot/OASIS-code-embedding-1.5B"
     )
+
+    if os.path.exists("faiss_index"):
+        print("Loading faiss index")
+        vector_store = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
+        return vector_store, embeddings
     embedded_docs = []
     for doc in docs:
         embedding_vector = embeddings.embed_query(doc.page_content)
@@ -27,14 +33,11 @@ def load_and_embed_documents():
             'metadata': doc.metadata
         })
 
-    # 创建向量存储
     vector_store = FAISS.from_documents(docs, embeddings)
-
-    # 保存向量存储到本地（可选）
     vector_store.save_local("faiss_index")
     return vector_store, embeddings
 
-def search_and_summarize(vector_store, embeddings, query="summarize the codebase", top_k=5):
+def search_and_summarize(vector_store, embeddings, query="summarize the codebase", top_k=100):
     # 将查询转换为 embedding 并搜索
     query_embedding = embeddings.embed_query(query)
     results = vector_store.similarity_search_by_vector(query_embedding, k=top_k)
@@ -46,7 +49,7 @@ def search_and_summarize(vector_store, embeddings, query="summarize the codebase
     for doc in results:
         # 从 metadata 中获取文件路径
         file_path = doc.metadata.get("source", "unknown")
-        content_snippet = doc.page_content[:200]  # 取前200字符作为预览
+        content_snippet = doc.page_content[:50]  # 取前200字符作为预览
 
         # 构建目录结构
         path_parts = file_path.split(os.sep)
@@ -76,7 +79,9 @@ def save_summary_to_json(summary, filename="codebase_summary.json"):
 
 if __name__ == '__main__':
     # 加载和嵌入文档
+    print("Loading and embedding documents...")
     vector_store, embeddings = load_and_embed_documents()
+    print("Loaded and embedded documents.")
 
     # 执行查询并生成 summary
     summary = search_and_summarize(vector_store, embeddings, query="summarize the codebase")
@@ -90,3 +95,13 @@ if __name__ == '__main__':
 
     # 保存到 JSON 文件
     save_summary_to_json(summary)
+
+    # call openai api to generate a summary
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    response = openai.ChatCompletion.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "user", "content": f"Please summarize the following codebase: {summary}"}
+        ]
+    )
+    print(response)
