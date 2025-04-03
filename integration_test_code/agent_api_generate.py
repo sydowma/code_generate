@@ -116,4 +116,4 @@ class APIGenerator:
 if __name__ == '__main__':
     api_generator = APIGenerator()
     api_generator.analyze(
-        '/Users/oker/github/code_generate/spring-request/src/main/java/pro/demo/springrequest/UserController.java')
+        '')

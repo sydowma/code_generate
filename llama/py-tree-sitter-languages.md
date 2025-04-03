@@ -6,4 +6,5 @@ cd py-tree-sitter-languages-1.10.2
 python build.py
 cd ..
 pip install -e py-tree-sitter-languages-1.10.2
+rm -f tree-sitter-languages-1.10.2.tar.gz
 ```

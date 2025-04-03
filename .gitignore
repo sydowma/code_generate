@@ -167,3 +167,7 @@ storage/
 basic_workflow.html
 
 py-tree-sitter-languages-1.10.2/
+
+**/faiss_index/
+
+lang_chain/*.json

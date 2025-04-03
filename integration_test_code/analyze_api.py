@@ -109,5 +109,5 @@ class AnalyzeAPI:
         return ""
 
 if __name__ == '__main__':
-    api = AnalyzeAPI(dir_path='/Users/oker/github/code_generate')
+    api = AnalyzeAPI(dir_path='')
     api.analyze()

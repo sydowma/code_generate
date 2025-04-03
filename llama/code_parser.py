@@ -112,7 +112,7 @@ class CodeParser:
 
 async def main():
     """Main function to demonstrate the CodeParser usage."""
-    parser = CodeParser(input_dir='/Users/oker/GitHub/download/project-x/src')
+    parser = CodeParser(input_dir='')
     response = await parser.analyze_repository()
     print(response)
 
